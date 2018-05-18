@@ -62,12 +62,11 @@ for item in list_items:
 # lb.delete(0, 'end')                                                 # 删除所有
 # lb.delete(0)                                                        # 删除第0
 # lb.pack()
-
 scr1 = tk.Scrollbar(monty)
 lb.config(yscrollcommand=scr1.set)
 scr1.config(command=lb.yview)
 lb.grid(column=0, row=0, rowspan=20)
-scr1.grid(column=0, row=0, rowspan=20, sticky='NES')
+scr1.grid(column=0, row=0, rowspan=20, sticky='NES')                # 排上bar
 
 aLabel = ttk.Label(monty, text="输入文本：")                        # add a label
 aLabel.grid(column=2, row=0, sticky=tk.W)                           # label 位置+格式
