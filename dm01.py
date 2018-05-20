@@ -1,21 +1,18 @@
 # -*- coding: utf-8 -*-
 
 # import
-import tkinter as tk  # 1 imports
-
+import tkinter as tk
+import tkinter.filedialog as filedialog
+import os
 from tkinter import ttk
-
 from tkinter import scrolledtext as st
+from tkinter import *
 from tkinter import Menu
 
 
 win = tk.Tk()  # 2 Create instance
 win.title("Python GUI")  # 3 Add a title
 win.resizable(0, 0)           # 4 Disable resizing the GUI
-
-
-menuBar = Menu(win)
-win.config(menu=menuBar)
 
 
 # 下划线这种命名方式表明这是私有函数不是被客户端调用的
@@ -25,36 +22,26 @@ def _quit():
     exit()
 
 
-fileMenu = Menu(menuBar)
-fileMenu.add_command(label="New")
-fileMenu.add_separator()                                            # 分隔線
-fileMenu.add_command(label="Exit", command=_quit)
-menuBar.add_cascade(label="File", menu=fileMenu)
-
-helpMenu = Menu(menuBar)
-helpMenu.add_command(label="About")
-menuBar.add_cascade(label="Help", menu=helpMenu)
-
 style = ttk.Style()
 style.configure("BW.TLabel", font=("Helvetica", "16", 'normal'))
 tabControl = ttk.Notebook(win)                                      # create tab control
-tab1 = ttk.Frame(tabControl, style="BW.TLabel")                                        # create a tab
+tab1 = ttk.Frame(tabControl, style="BW.TLabel")                     # create a tab
 tab2 = ttk.Frame(tabControl)
-tabControl.add(tab1, text='   SPL   ')                               # tab control add a tab & name
+tabControl.add(tab1, text='   SPL   ')                              # tab control add a tab & name
 tabControl.add(tab2, text='   SEN   ')
 tabControl.pack(expand=1, fill="both")                              # Pack to make visible
 
-
-monty = ttk.LabelFrame(tab1, text='整理')                  # 在tab1加入一個frame
-monty.grid(column=0, row=0, padx=8, pady=4)                        # frame的格式
+monty = ttk.LabelFrame(tab1, text='整理')                           # 在tab1加入一個frame
+monty.grid(column=0, row=0, padx=8, pady=4)                         # frame的格式
 
 monty2 = ttk.LabelFrame(tab2, text=' The Snake ')                   # 在tab2加入一個frame
 monty2.grid(column=0, row=0, padx=8, pady=4)
 
+# tab 1
 var2 = tk.StringVar()
 scr1 = tk.Scrollbar(win, orient="vertical")
-lb = tk.Listbox(monty, width=20, listvariable=var2)                           # 将var2的值赋给Listbox
-list_items = [1,2,3,4]                 # 创建一个list并将值循环添加到Listbox控件中
+lb = tk.Listbox(monty, width=20, listvariable=var2)                 # 将var2的值赋给Listbox
+list_items = [1,2,3,4]                                              # 创建一个list并将值循环添加到Listbox控件中
 for item in list_items:
     lb.insert('end', item)                                          # 从最后一个位置开始加入值
 # lb.insert(1, 'first')                                               # 在第一个位置加入'first'字符
@@ -68,51 +55,69 @@ scr1.config(command=lb.yview)
 lb.grid(column=0, row=0, rowspan=20)
 scr1.grid(column=0, row=0, rowspan=20, sticky='NES')                # 排上bar
 
+
+def clickMe():
+    action.configure(text="hello " + name.get() + "-" + number.get())
+    lb.delete(0, END)
+    global filepath
+    filepath = filedialog.askdirectory()                            # 選擇資料夾
+    if filepath:
+        lb.insert(0, filepath)                                      # 將選擇好的路徑加入到listbox裡面
+    print(filepath)
+    getdir(filepath)                                                # 選擇資料夾裡的檔案
+    # aLabel.configure(foreground="red")
+
+
+def getdir(filepath=os.getcwd()):
+    """
+    用於獲取目錄下的文件列表
+    """
+    cf = os.listdir(filepath)                                       # 返回指定的文件夾包含的文件
+    for i in cf:
+        print(os.path.splitext(i)[-1].lower())
+        if os.path.splitext(i)[-1].lower() == ".spl":               # 篩選副檔名
+            lb.insert(END, i)                                       # 符合名稱的副檔名加入listbox
+    lb.see('end')                                                   # 顯示最後一筆
+
+
+action = ttk.Button(monty, text="開啟路徑", command=clickMe)            # 增加按鍵
+action.grid(column=1, row=0, sticky='W')
+# action.configure(state="disabled")                                # Disable the Button Widget
+
 aLabel = ttk.Label(monty, text="输入文本：")                        # add a label
-aLabel.grid(column=2, row=0, sticky=tk.W)                           # label 位置+格式
+aLabel.grid(column=1, row=1, sticky=tk.W)                           # label 位置+格式
 aLabe2 = ttk.Label(monty, text="choose a number")                   # add a label
-aLabe2.grid(column=3, row=0, sticky=tk.W)                           # label 位置+格式
+aLabe2.grid(column=2, row=1, sticky=tk.W)                           # label 位置+格式
+
+name = tk.StringVar()
+nameEntered = ttk.Entry(monty, width=12, textvariable=name)         # 增加textbox
+nameEntered.grid(column=1, row=3, sticky=tk.W)
+nameEntered.focus()                                                 # Place cursor into name Entry
 
 number = tk.StringVar()
 # 只能選擇我們已經編入Combobox的值：state ="readonly"
 numberChosen = ttk.Combobox(monty, width=12, textvariable=number, state="readonly")
-numberChosen.grid(column=3, row=1, sticky=tk.W)                     # combobox 位置+格式
+numberChosen.grid(column=1, row=4, sticky=tk.W)                     # combobox 位置+格式
 numberChosen["values"] = (1, 2, 3, 4, 5, 6, 12)                     # 預設值
 numberChosen.current(3)                                             # 顯示第幾個預設
 
-
-def clickMe():
-    action.configure(text="hello " + name.get() + "-" + number.get())
-    # aLabel.configure(foreground="red")
-    lb.insert('end', "++++")
-
-
-action = ttk.Button(monty, text="開啟路徑", command=clickMe)            # 增加按鍵
-action.grid(column=4, row=1)
-# action.configure(state="disabled")                                # Disable the Button Widget
-
-name = tk.StringVar()
-nameEntered = ttk.Entry(monty, width=12, textvariable=name)         # 增加textbox
-nameEntered.grid(column=2, row=1, sticky=tk.W)
-nameEntered.focus()                                                 # Place cursor into name Entry
-
-
-# Creating three checkbuttons    # 1
+# tab 2
+# Creating three checkbuttons
 # 0 (unchecked) or 1 (checked) so the type of the variable is a tkinter integer.
-chVarDis = tk.IntVar()  # 2
-check1 = tk.Checkbutton(monty2, text="Disabled", variable=chVarDis, state='disabled')  # 3
-check1.select()  # 4
-check1.grid(column=0, row=4, sticky=tk.W)  # 5
+chVarDis = tk.IntVar()
+check1 = tk.Checkbutton(monty2, text="Disabled", variable=chVarDis, state='disabled')
+check1.select()
+check1.grid(column=0, row=4, sticky=tk.W)
 
-chVarUn = tk.IntVar()  # 6
+chVarUn = tk.IntVar()
 check2 = tk.Checkbutton(monty2, text="UnChecked", variable=chVarUn)
-check2.deselect()  # 8
-check2.grid(column=1, row=4, sticky=tk.W)  # 9
+check2.deselect()
+check2.grid(column=1, row=4, sticky=tk.W)
 
-chVarEn = tk.IntVar()  # 10
+chVarEn = tk.IntVar()
 check3 = tk.Checkbutton(monty2, text="Enabled", variable=chVarEn)
-check3.select()  # 12
-check3.grid(column=2, row=4, sticky=tk.W)  # 13
+check3.select()
+check3.grid(column=2, row=4, sticky=tk.W)
 
 tk.Scrollbar()
 
