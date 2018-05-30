@@ -15,7 +15,7 @@ from tkinter import Menu
 
 win = tk.Tk()  # 2 Create instance
 win.title("Pro-wave 資料整理 V2.0")     # 視窗抬頭文字
-win.geometry("538x400+120+100")         # 設定視窗大小及起始位置
+win.geometry("538x480+120+100")         # 設定視窗大小及起始位置
 win.resizable(0, 0)                     # 關閉視窗長寬可變大小
 
 
@@ -28,52 +28,6 @@ def _quit():
 
 def message_box(title, text, style):    # 對話框
     return ctypes.windll.user32.MessageBoxW(0, text, title, style)
-
-
-style = ttk.Style()
-style.configure("BW.TLabel", font=("Helvetica", "16", 'normal'))
-# create tab control
-tabControl = ttk.Notebook(win)
-# create a tab
-tab1 = ttk.Frame(tabControl, style="BW.TLabel")
-tab2 = ttk.Frame(tabControl)
-# tab control add a tab & name
-tabControl.add(tab1, text='   SPL   ')
-tabControl.add(tab2, text='   TEST   ')
-# Pack to make visible
-tabControl.pack(expand=1, fill="both")
-
-# 在tab1加入一個frame
-monty = ttk.LabelFrame(tab1, text='整理')
-monty.grid(column=0, row=0, padx=8, pady=4)                         # frame的格式
-
-# 在tab2加入一個frame
-monty2 = ttk.LabelFrame(tab2, text=' The Snake ')
-monty2.grid(column=0, row=0, padx=8, pady=4)
-
-# tab 1
-var2 = tk.Variable()
-scr1 = tk.Scrollbar(win, orient="vertical")
-lb = tk.Listbox(monty, width=20, height=20, listvariable=var2,
-                selectmode=EXTENDED)    # 將var2的值賦給Listbox,多選
-# list_items = [1,2,3,4]                                              # 创建一个list并将值循环添加到Listbox控件中
-# for item in list_items:
-#     lb.insert('end', item)                                          # 从最后一个位置开始加入值
-# lb.insert(1, 'first')                                               # 在第一个位置加入'first'字符
-# lb.insert(2, 'second')                                              # 在第二个位置加入'second'字符
-# lb.delete(0, 'end')                                                 # 删除所有
-# lb.delete(0)                                                        # 删除第0
-# lb.pack()
-scr1 = tk.Scrollbar(monty)
-lb.config(yscrollcommand=scr1.set)
-scr1.config(command=lb.yview)
-lb.grid(column=0, row=1, columnspan=2, rowspan=20, sticky='W')
-scr1.grid(
-    column=0,
-    row=1,
-    columnspan=2,
-    rowspan=20,
-    sticky='NES')                # 排上bar
 
 
 def getdir(Extension):
@@ -139,51 +93,93 @@ def open_spl_file(path):
 
 
 def splclick():                         # Spl 整理按鍵
-    a1 = []                             # 檔名
-    a2 = []                             # @dB,Fl
-    a3 = []                             # @dB,Fh
     if lb.size() != 0:                  # 判斷是否有要整理的檔案
         if chSpl_1.get() == 1 or chSpl_2.get() == 1 or chSpl_3.get(
         ) == 1 or chSpl_4.get() == 1 or chSpl_5.get() == 1 or chSpl_6.get() == 1:
+            a1 = []
             for i in range(lb.size()):
-                # 加入檔名
-                a1.append(lb.get(i))
+                lb2.insert(0, "整理檔案: " + aLabel.cget("text") + "/" + lb.get(i))  # 顯示資訊
                 d1, d2, d3 = open_spl_file(
-                    aLabel.cget("text") + "/" + lb.get(i))          # 開啟檔案並整理資料
-                for j in range(
-                    d3.index(
-                        max(d3)), 0, -1):                           # 計算@dB 的Fl
-                    if d3[j] < float(vvalue.get()):
-                        break
-                fl = d2[j + 1] + (((d3[j + 1] - float(vvalue.get()))
-                                   * (d2[j + 1] - d2[j])) / (d3[j + 1] - d3[j]))
-                a2.append(round(fl, 1))
-                for j in range(
+                    aLabel.cget("text") + "/" + lb.get(i))  # 開啟檔案並整理資料
+                if i == 0:
+                    a2 = []
+                    a2.append("檔名")
+                    if chSpl_1.get() == 1:
+                        a2.append("@" + vvalue.get() + " BW")
+                    if chSpl_3.get() == 1:
+                        a2.append("FrdB")
+                        a2.append("FrFreq")
+                    if chSpl_4.get() == 1:
+                        a2.append("RateddB")
+                        a2.append("RatedFreq")
+                    if chSpl_5.get() == 1:
+                        a2.append("Fc")
+                        a2.append("Fh")
+                        a2.append("Fl")
+                    if chSpl_6.get() == 1:
+                        a2.append("BW")
+                    a1.append(a2)
+                a2 = []
+                a2.append(lb.get(i))                            # 加入檔名
+                if chSpl_1.get() == 1:                          # 計算 @ 多少dB 的 BW
+                    for j in range(                             # 計算@dB 的Fl
                         d3.index(
-                            max(d3)),
-                        len(d3)):                         # 計算@dB 的Fh
-                    if d3[j] < float(vvalue.get()):
-                        break
-                fh = d2[j - 1] + (((d3[j - 1] - float(vvalue.get()))
-                                   * (d2[j] - d2[j - 1])) / (d3[j - 1] - d3[j]))
-                a3.append(round(fh, 2))
+                            max(d3)), 0, -1):
+                        if d3[j] < float(vvalue.get()):
+                            break
+                    fl = d2[j + 1] + (((d3[j + 1] - float(vvalue.get()))
+                                       * (d2[j + 1] - d2[j])) / (d3[j + 1] - d3[j]))
+                    for j in range(                                 # 計算@dB 的Fh
+                            d3.index(max(d3)), len(d3)):
+                        if d3[j] < float(vvalue.get()):
+                            break
+                    fh = d2[j - 1] + (((d3[j - 1] - float(vvalue.get()))
+                                       * (d2[j] - d2[j - 1])) / (d3[j - 1] - d3[j]))
+                    # 加入 @dB 的 BW
+                    a2.append(round(fh - fl, 2))
+                if chSpl_3.get() == 1:
+                    a2.append(d1[8])        # FrdB
+                    a2.append(d1[9])        # FrFreq
+                if chSpl_4.get() == 1:
+                    a2.append(d1[10])       # RateddB
+                    a2.append(d1[11])       # RatedFreq
+                if chSpl_5.get() == 1:
+                    a2.append(d1[13])       # Fc
+                    a2.append(d1[15])       # Fh
+                    a2.append(d1[17])       # Fl
+                if chSpl_6.get() == 1:
+                    a2.append(d1[18])       # BW
+                if chSpl_2.get() == 1:
+                    if i == 0:
+                        for k in range(len(d2)):
+                            if k == 0:
+                                a1index=len(a1[0])
+                            a1[0].append(d2[k])     # 加入 Freq 標籤
+                        print(a1[0][a1index])       # 標籤起始位置
+
+                    for k in range(len(d3)):
+                        a2.append(d3[k])    # dB
+
+                a1.append(a2)           # 將 a2[] 加入 a1[] 變二維
+            lb2.insert(0, "存檔中......")                   # 顯示資訊
             filepath = filedialog.asksaveasfilename(
                 filetypes=(("csv files", "*.csv"), ("all files", "*.*")))
             file, ext = os.path.splitext(filepath)
-            if len(ext) == 0:
+            if len(file) != 0 and len(ext) == 0:            # 自動加入附檔名
                 filepath += ".csv"
-            print(filepath, file, ext, len(ext))
-            fp = open(filepath, "a")                    # 開啟檔案
-            j = "檔名"
-            for i in a1:
-                j += "," + str(i)
-            fp.write(j + '\n')                          # 寫入檔案
-            j = vvalue.get() + "dB Bandwidth"
-            for i in a2:
-                j += "," + str(i)
-            fp.write(j + '\n')                          # 寫入檔案
-            print(j)
-            fp.close()                                  # 關閉檔案
+            if len(filepath) != 0:                          # 檢查是否有輸入檔名
+                lb2.insert(0, "檔案存檔: " + filepath)      # 顯示資訊
+                fp = open(filepath, "w")                    # 開啟檔案
+
+                print(len(a1),len(a1[0]))
+                for j in range(len(a1[0])):
+                    tp = ''
+                    for i in range(len(a1)):
+                        print(a1[i][j])
+                        tp += str(a1[i][j]) + ','
+                    fp.write(tp + '\n')                     # 寫入檔案
+                fp.close()                                  # 關閉檔案
+            lb2.insert(0, "!!!檔案整理完成!!!")             # 顯示資訊
         else:
             message_box('警告', '沒有勾選要整理項目', 0)  # 跳出對話方塊
     else:
@@ -198,6 +194,8 @@ def clickOpen():            # 開啟路徑
     dname = getdir('.spl')
     if dname != 0:
         aLabel.configure(text=dname[0], foreground="red")
+        lb2.insert(0, "開啟路徑: " + dname[0])            # 顯示資訊:路徑
+        lb2.insert(0, "檔案總數: " + str(len(dname)-1))   # 顯示資訊:檔案數
         del dname[0]
         lb.insert(END, *natsorted(dname))  # 排序後符合名稱的副檔名加入listbox
         # lb.see('end')  # 顯示最後一筆
@@ -212,6 +210,63 @@ def clickDel():             # 刪除選取
         # 刪除所選擇的Listbox 選項
         lb.delete(i)
     print(lb.size(), chSpl_1.get())
+
+
+style = ttk.Style()
+style.configure("BW.TLabel", font=("Helvetica", "16", 'normal'))
+# create tab control
+tabControl = ttk.Notebook(win)
+# create a tab
+tab1 = ttk.Frame(tabControl, style="BW.TLabel")
+tab2 = ttk.Frame(tabControl)
+tab3 = ttk.Frame(tabControl)
+# tab control add a tab & name
+tabControl.add(tab1, text='   SPL   ')
+tabControl.add(tab2, text='   EDB   ')
+tabControl.add(tab3, text='   TEST   ')
+# Pack to make visible
+tabControl.pack(expand=1, fill="both")
+
+# 在tab1加入一個frame
+monty = ttk.LabelFrame(tab1, text=' SPL 整理 ')
+monty.grid(column=0, row=0, padx=4, pady=0)                         # frame的格式
+
+# 在tab2加入一個frame
+monty2 = ttk.LabelFrame(tab3, text=' The Snake ')
+monty2.grid(column=0, row=0, padx=8, pady=4)
+
+# tab 1
+var2 = tk.Variable()
+scr1 = tk.Scrollbar(win, orient="vertical")
+lb = tk.Listbox(monty, width=20, height=20, listvariable=var2,
+                selectmode=EXTENDED)    # 將var2的值賦給Listbox,多選
+# list_items = [1,2,3,4]                                              # 创建一个list并将值循环添加到Listbox控件中
+# for item in list_items:
+#     lb.insert('end', item)                                          # 从最后一个位置开始加入值
+# lb.insert(1, 'first')                                               # 在第一个位置加入'first'字符
+# lb.insert(2, 'second')                                              # 在第二个位置加入'second'字符
+# lb.delete(0, 'end')                                                 # 删除所有
+# lb.delete(0)                                                        # 删除第0
+# lb.pack()
+scr1 = tk.Scrollbar(monty)
+lb.config(yscrollcommand=scr1.set)
+scr1.config(command=lb.yview)
+lb.grid(column=0, row=1, columnspan=2, rowspan=20, sticky='W')
+scr1.grid(
+    column=0,
+    row=1,
+    columnspan=2,
+    rowspan=20,
+    sticky='NES')                # 排上bar
+
+var3 = tk.Variable()
+splscr1 = tk.Scrollbar(win, orient="vertical")
+lb2 = tk.Listbox(monty, height=5, listvariable=var3,  selectmode=EXTENDED)    # 將var2的值賦給Listbox,多選
+splscr1 = tk.Scrollbar(monty)
+lb2.config(yscrollcommand=splscr1.set)
+splscr1.config(command=lb2.yview)
+lb2.grid(column=0, row=21, columnspan=5, sticky='WE')
+splscr1.grid(column=0, row=21, columnspan=5,  sticky='NES')                # 排上bar
 
 
 action_del = ttk.Button(
@@ -249,6 +304,7 @@ splcheck1 = tk.Checkbutton(
     variable=chSpl_1)
 # splcheck1.select()
 splcheck1.grid(column=3, row=1, sticky='W')
+
 vvalue = tk.StringVar()
 vvalue.set(100)
 nameEntered = ttk.Entry(
@@ -258,23 +314,32 @@ nameEntered = ttk.Entry(
 nameEntered.grid(column=3, row=1, padx=40, sticky=tk.W)
 
 chSpl_2 = tk.IntVar()
-splcheck2 = tk.Checkbutton(monty, text="Spl dB data", variable=chSpl_2)
+splcheck2 = tk.Checkbutton(
+    monty,
+    text="頻率 & dB 資料 ( Spl dB data )",
+    variable=chSpl_2)
 splcheck2.grid(column=3, row=2, sticky='W')
 
 chSpl_3 = tk.IntVar()
-splcheck3 = tk.Checkbutton(monty, text="Resonant Freq", variable=chSpl_3)
+splcheck3 = tk.Checkbutton(
+    monty,
+    text="諧振頻率 & dB ( Resonant Freq & dB )",
+    variable=chSpl_3)
 splcheck3.grid(column=3, row=3, sticky='W')
 
 chSpl_4 = tk.IntVar()
-splcheck4 = tk.Checkbutton(monty, text="Rated Freq", variable=chSpl_4)
+splcheck4 = tk.Checkbutton(
+    monty,
+    text="額定頻率 & dB ( Rated Freq & dB )",
+    variable=chSpl_4)
 splcheck4.grid(column=3, row=4, sticky='W')
 
 chSpl_5 = tk.IntVar()
-splcheck5 = tk.Checkbutton(monty, text="-6dB Fc Fh Fl", variable=chSpl_5)
+splcheck5 = tk.Checkbutton(monty, text="@-6dB Fc Fh Fl", variable=chSpl_5)
 splcheck5.grid(column=3, row=5, sticky='W')
 
 chSpl_6 = tk.IntVar()
-splcheck6 = tk.Checkbutton(monty, text="-6dB BandWidth", variable=chSpl_6)
+splcheck6 = tk.Checkbutton(monty, text="@-6dB BandWidth", variable=chSpl_6)
 splcheck6.grid(column=3, row=6, sticky='W')
 
 splaction = ttk.Button(monty, text="整理", command=splclick)            # 增加按鍵
